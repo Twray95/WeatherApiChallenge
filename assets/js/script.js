@@ -9,7 +9,6 @@ var pastSearchArray = [];
 
 function cityBtn() {
   var cityList = JSON.parse(localStorage.getItem("pastSearch"));
-  console.log(cityList);
   pastSearchEl.textContent = "";
   for (i = 0; i < cityList.length; i++) {
     var btnDiv = document.createElement("div");
@@ -19,9 +18,39 @@ function cityBtn() {
     cityBtnEl.classList.add("btn");
     cityBtnEl.classList.add("btn-secondary");
     cityBtnEl.classList.add("btn-block");
+    cityBtnEl.classList.add("pastBtnSearch");
+    cityBtnEl.classList.add(cityList[i]);
     cityBtnEl.textContent = cityList[i];
     btnDiv.appendChild(cityBtnEl);
   }
+  console.log($(".pastBtnSearch"));
+  $(".pastBtnSearch").on("click", function (event) {
+    event.preventDefault();
+    var userSearch = event.target.innerText;
+    var userSearchURL =
+      weatherUrl + userSearch + "&length1" + weatherApiKey + "&units=imperial";
+    fetch(userSearchURL)
+      .then(function (response) {
+        return response.json();
+      })
+      .then(function (data) {
+        addWeatherToday(data);
+      });
+  });
+}
+
+function addWeatherToday(data) {
+  weatherTodayEl.textContent = "";
+  var weatherToday = document.createElement("h1");
+  weatherToday.textContent = data.name + today.format(" (M / D / YYYY)");
+  weatherTodayEl.appendChild(weatherToday);
+  var tempToday = document.createElement("h2");
+  tempToday.textContent = "Temp: " + data.main.temp + " °F";
+  var windToday = document.createElement("h2");
+  windToday.textContent = data.wind.speed;
+  var humidityToday = document.createElement("h2");
+  humidityToday.textContent = data.main.humidity;
+  weatherToday.appendChild(tempToday);
 }
 
 $(searchBtnEl).on("click", function (event) {
@@ -44,17 +73,7 @@ $(searchBtnEl).on("click", function (event) {
       })
 
       .then(function (data) {
-        weatherTodayEl.textContent = "";
-        var weatherToday = document.createElement("h1");
-        weatherToday.textContent = data.name + today.format(" (M / D / YYYY)");
-        weatherTodayEl.appendChild(weatherToday);
-        var tempToday = document.createElement("h2");
-        tempToday.textContent = "Temp: " + data.main.temp + " °F";
-        var windToday = document.createElement("h2");
-        windToday.textContent = data.wind.speed;
-        var humidityToday = document.createElement("h2");
-        humidityToday.textContent = data.main.humidity;
-        weatherToday.appendChild(tempToday);
+        addWeatherToday(data);
       });
   }
   cityBtn();
