@@ -1,6 +1,7 @@
 var searchFieldEl = document.querySelector("#search-input");
 var searchBtnEl = document.querySelector("#searchBtn");
 var pastSearchEl = document.querySelector("#pastSearches");
+var cardRowEl = document.querySelector("#cardRow");
 var weatherUrl = "https://api.openweathermap.org/data/2.5/weather?q=";
 var forecastUrl = "https://api.openweathermap.org/data/2.5/forecast?q=";
 var weatherApiKey = "&appid=bb7d0040d30c625c65c4836bd0556ffe";
@@ -30,12 +31,26 @@ function cityBtn() {
     var userSearch = event.target.innerText;
     var userSearchURL =
       weatherUrl + userSearch + "&length1" + weatherApiKey + "&units=imperial";
+    var cardUrl =
+      forecastUrl +
+      userSearch +
+      "&length=5" +
+      weatherApiKey +
+      "&units=imperial";
     fetch(userSearchURL)
       .then(function (response) {
         return response.json();
       })
       .then(function (data) {
         addWeatherToday(data);
+      });
+    fetch(cardUrl)
+      .then(function (response) {
+        return response.json();
+      })
+      .then(function (data) {
+        filter(data);
+        addForecastCards(cardArray);
       });
   });
 }
@@ -56,14 +71,36 @@ function addWeatherToday(data) {
   weatherToday.appendChild(humidityToday);
 }
 
+function addForecastCards(array) {
+  cardRowEl.textContent = "";
+  for (i = 0; i < array.length; i++) {
+    var weatherCard = document.createElement("div");
+    weatherCard.classList.add("col-2");
+    cardRowEl.appendChild(weatherCard);
+    var weatherCardDate = document.createElement("h4");
+    var dateData = array[i].dt_txt;
+    var newDateData = dateData.replace("12:00:00", "");
+    weatherCardDate.textContent = newDateData;
+    weatherCard.appendChild(weatherCardDate);
+    var weatherCardTemp = document.createElement("h5");
+    weatherCardTemp.textContent = array[i].main.temp;
+    weatherCard.appendChild(weatherCardTemp);
+    var weatherCardWind = document.createElement("h5");
+    weatherCardWind.textContent = array[i].wind.speed;
+    weatherCard.appendChild(weatherCardWind);
+    var weatherCardHumidity = document.createElement("h5");
+    weatherCardHumidity.textContent = array[i].main.humidity;
+    weatherCard.appendChild(weatherCardHumidity);
+  }
+  cardArray.length = 0;
+}
+
 function filter(data) {
   for (i = 0; i < data.list.length; i++) {
     if (data.list[i].dt_txt.includes("12:00:00")) {
-      console.log(data.list[i].main.temp);
       cardArray.push(data.list[i]);
     }
   }
-  console.log(cardArray);
 }
 
 $(searchBtnEl).on("click", function (event) {
@@ -79,7 +116,6 @@ $(searchBtnEl).on("click", function (event) {
     "&units=imperial";
   var cardUrl =
     forecastUrl + userSearch + "&length=5" + weatherApiKey + "&units=imperial";
-  console.log(cardUrl);
   if (!searchFieldEl.value) {
     console.log("please search a city");
   } else {
@@ -96,8 +132,8 @@ $(searchBtnEl).on("click", function (event) {
         return response.json();
       })
       .then(function (data) {
-        console.log(data);
         filter(data);
+        addForecastCards(cardArray);
       });
   }
   cityBtn();
