@@ -2,10 +2,13 @@ var searchFieldEl = document.querySelector("#search-input");
 var searchBtnEl = document.querySelector("#searchBtn");
 var pastSearchEl = document.querySelector("#pastSearches");
 var weatherUrl = "https://api.openweathermap.org/data/2.5/weather?q=";
+var forecastUrl = "https://api.openweathermap.org/data/2.5/forecast?q=";
 var weatherApiKey = "&appid=bb7d0040d30c625c65c4836bd0556ffe";
 var today = dayjs();
+var todayFilter = today.format("YYYY-MM-DD ");
 var weatherTodayEl = document.querySelector("#today");
 var pastSearchArray = [];
+var cardArray = [];
 
 function cityBtn() {
   var cityList = JSON.parse(localStorage.getItem("pastSearch"));
@@ -19,11 +22,9 @@ function cityBtn() {
     cityBtnEl.classList.add("btn-secondary");
     cityBtnEl.classList.add("btn-block");
     cityBtnEl.classList.add("pastBtnSearch");
-    cityBtnEl.classList.add(cityList[i]);
     cityBtnEl.textContent = cityList[i];
     btnDiv.appendChild(cityBtnEl);
   }
-  console.log($(".pastBtnSearch"));
   $(".pastBtnSearch").on("click", function (event) {
     event.preventDefault();
     var userSearch = event.target.innerText;
@@ -47,10 +48,22 @@ function addWeatherToday(data) {
   var tempToday = document.createElement("h2");
   tempToday.textContent = "Temp: " + data.main.temp + " °F";
   var windToday = document.createElement("h2");
-  windToday.textContent = data.wind.speed;
+  windToday.textContent = "Wind: " + data.wind.speed + " MPH";
   var humidityToday = document.createElement("h2");
-  humidityToday.textContent = data.main.humidity;
+  humidityToday.textContent = "Humidity: " + data.main.humidity + " %";
   weatherToday.appendChild(tempToday);
+  weatherToday.appendChild(windToday);
+  weatherToday.appendChild(humidityToday);
+}
+
+function filter(data) {
+  for (i = 0; i < data.list.length; i++) {
+    if (data.list[i].dt_txt.includes("12:00:00")) {
+      console.log(data.list[i].main.temp);
+      cardArray.push(data.list[i]);
+    }
+  }
+  console.log(cardArray);
 }
 
 $(searchBtnEl).on("click", function (event) {
@@ -64,6 +77,9 @@ $(searchBtnEl).on("click", function (event) {
     "&length=1" +
     weatherApiKey +
     "&units=imperial";
+  var cardUrl =
+    forecastUrl + userSearch + "&length=5" + weatherApiKey + "&units=imperial";
+  console.log(cardUrl);
   if (!searchFieldEl.value) {
     console.log("please search a city");
   } else {
@@ -75,6 +91,16 @@ $(searchBtnEl).on("click", function (event) {
       .then(function (data) {
         addWeatherToday(data);
       });
+    fetch(cardUrl)
+      .then(function (response) {
+        return response.json();
+      })
+      .then(function (data) {
+        console.log(data);
+        filter(data);
+      });
   }
   cityBtn();
 });
+
+cityBtn();
