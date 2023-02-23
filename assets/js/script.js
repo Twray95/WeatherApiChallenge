@@ -6,7 +6,7 @@ var weatherUrl = "https://api.openweathermap.org/data/2.5/weather?q=";
 var forecastUrl = "https://api.openweathermap.org/data/2.5/forecast?q=";
 var weatherApiKey = "&appid=bb7d0040d30c625c65c4836bd0556ffe";
 var today = dayjs();
-var todayFilter = today.format("YYYY-MM-DD ");
+var iconUrl = "http://openweathermap.org/img/wn/";
 var weatherTodayEl = document.querySelector("#today");
 var pastSearchArray = [];
 var cardArray = [];
@@ -58,8 +58,12 @@ function cityBtn() {
 function addWeatherToday(data) {
   weatherTodayEl.textContent = "";
   var weatherToday = document.createElement("h1");
+  var iconUrlToday = iconUrl + data.weather[0].icon + "@2x.png";
   weatherToday.textContent = data.name + today.format(" (M / D / YYYY)");
   weatherTodayEl.appendChild(weatherToday);
+  var weatherImage = document.createElement("img");
+  weatherImage.setAttribute("src", iconUrlToday);
+  weatherToday.appendChild(weatherImage);
   var tempToday = document.createElement("h2");
   tempToday.textContent = "Temp: " + data.main.temp + " °F";
   var windToday = document.createElement("h2");
@@ -82,14 +86,19 @@ function addForecastCards(array) {
     var newDateData = dateData.replace("12:00:00", "");
     weatherCardDate.textContent = newDateData;
     weatherCard.appendChild(weatherCardDate);
-    var weatherCardTemp = document.createElement("h5");
-    weatherCardTemp.textContent = array[i].main.temp;
+    var iconUrlToday = iconUrl + array[i].weather[0].icon + ".png";
+    var weatherImage = document.createElement("img");
+    weatherImage.setAttribute("src", iconUrlToday);
+    weatherCard.appendChild(weatherImage);
+    var weatherCardTemp = document.createElement("h6");
+    weatherCardTemp.textContent = "Temp: " + array[i].main.temp + " °F";
     weatherCard.appendChild(weatherCardTemp);
-    var weatherCardWind = document.createElement("h5");
-    weatherCardWind.textContent = array[i].wind.speed;
+    var weatherCardWind = document.createElement("h6");
+    weatherCardWind.textContent = "Wind: " + array[i].wind.speed + " MPH";
     weatherCard.appendChild(weatherCardWind);
-    var weatherCardHumidity = document.createElement("h5");
-    weatherCardHumidity.textContent = array[i].main.humidity;
+    var weatherCardHumidity = document.createElement("h6");
+    weatherCardHumidity.textContent =
+      "Humidity: " + array[i].main.humidity + " %";
     weatherCard.appendChild(weatherCardHumidity);
   }
   cardArray.length = 0;
@@ -101,6 +110,7 @@ function filter(data) {
       cardArray.push(data.list[i]);
     }
   }
+  console.log(cardArray);
 }
 
 $(searchBtnEl).on("click", function (event) {
@@ -125,6 +135,7 @@ $(searchBtnEl).on("click", function (event) {
       })
 
       .then(function (data) {
+        console.log(data);
         addWeatherToday(data);
       });
     fetch(cardUrl)
